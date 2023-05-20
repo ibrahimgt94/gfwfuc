@@ -1,8 +1,10 @@
 # gfwfuc
 gfwfuc
 
-set firfox proxy http => host 127.0.0.1 port : 4501
+set firfox proxy http => host 127.0.0.1 port : 4501 
+
 pip install package : requests, socket, json, threading, ping3, math
+
 run proxy.py
 
 open youtube, twitter.com, ...
