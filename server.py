@@ -6,6 +6,7 @@ import time
 import os
 from sock import sock
 from conf import conf
+from ether import ether
 import threading
 from doh import doh
 from rtimer import rtimer
@@ -20,6 +21,7 @@ class threaded_server(object):
     def listen(self, conf_args):
         self.conf = conf(conf_args)
         self.doh = doh(self.conf)
+        self.ether = ether(self.conf, self.doh)
         if self.conf.usa_dns_speed() == True:
             self.doh.set_dns_uri_sort_speed()
         else:
@@ -38,14 +40,24 @@ class threaded_server(object):
             timeout = self.conf.get_socket_timeout()
             cl_sock.settimeout(timeout)
             time.sleep(self.conf.get_sleep_time())
-            self.thread(self.up_stream, (cl_sock,))
+            
+            data = cl_sock.recv(16384)
 
-    def up_stream(self, cl_sock):
-        bk_sock = self.han_cl_reqs(cl_sock)
+            if (data[:7] == b"CONNECT" or (data[:3]==b'GET') or (data[:4]==b'POST')):
+                self.thread(self.up_stream, (cl_sock, data, True))
+            else:
+                timeout = self.conf.get_socket_timeout()
+                ser_sock = self.sock.server(timeout)
+                clflr_ser = self.conf.def_clflr_ip()
+                ser_sock.connect((clflr_ser, 443))
+                self.thread(self.while_up_stream, (cl_sock, ser_sock, data, False))                
+
+    def up_stream(self, cl_sock, data, type):
+        bk_sock = self.han_cl_reqs(cl_sock, data)
         if(bk_sock == None):
             cl_sock.close()
             return False
-        self.while_up_stream(cl_sock, bk_sock)
+        self.while_up_stream(cl_sock, bk_sock, data, type)
 
     def get_info_ser(self, data):
         host_and_port = str(data).split()[1]
@@ -70,14 +82,13 @@ class threaded_server(object):
             socket.inet_aton(ser_host)
             return ser_host
         except socket.error:
-            return self.doh.query(ser_host, self.conf)
+            return self.doh.query(ser_host)
 
     def send_conn_establis(self, cl_sock):
         response_data = b'HTTP/1.1 200 Connection established\r\nProxy-agent: MyProxy/1.0\r\n\r\n'            
         cl_sock.sendall(response_data)
 
-    def han_cl_reqs(self, cl_sock):
-        data = cl_sock.recv(16384)
+    def han_cl_reqs(self, cl_sock, data):
         if data[:7] == b"CONNECT":
             ser_host, ser_port = self.get_info_ser(data)
         elif (data[:3]==b'GET') or (data[:4]==b'POST'):
@@ -98,17 +109,17 @@ class threaded_server(object):
             ser_sock.close()
             return None
 
-    def while_up_stream(self, cl_sock, bk_sock):
+    def while_up_stream(self, cl_sock, bk_sock, data, type = False):
         first = True
         try:
             while True:
                 if first == True:
                     first = False
-                    data = cl_sock.recv(16384)
+                    if type == True:
+                        data = cl_sock.recv(16384)
                     if data:
                         self.thread(self.while_down_stream, (cl_sock, bk_sock))
-                        # self.fragment(bk_sock, data)
-                        self.thread(self.fragment, (bk_sock, data))
+                        self.fragment(bk_sock, data)
                 else:
                     data = cl_sock.recv(16384)
                     if data:

@@ -7,10 +7,10 @@ class conf(object):
     def dns_uri(self):
         return {
             "1.1.1.1",
-            "1.0.0.1",
-            "8.20.247.2",
-            "167.114.220.125",
-            "163.172.34.56",
+            # "1.0.0.1",
+            # "8.20.247.2",
+            # "167.114.220.125",
+            # "163.172.34.56",
         }
 
     def redic_tube_uri(self):
@@ -66,4 +66,14 @@ class conf(object):
     def get_proxy(self):
         return (self.conf.get("lisen_host"), self.conf.get("lisen_port"))
 
+    def clflr_cache_time(self):
+        return self.conf.get("clflr_cache_time")
+    
+    def clflr_range(self):
+        return self.conf.get("clflr_range")
 
+    def def_clflr_ip(self):
+        return self.conf.get("def_clflr_ip")
+    
+    def get_worker_domain(self):
+        return self.conf.get("worker_domain")

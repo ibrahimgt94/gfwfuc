@@ -20,8 +20,8 @@ class doh(object):
     def set_dns_uri_rand(self):
         dns_uri = list(self.conf.dns_uri())
         rand_dns_uri = random.choice(dns_uri)
-        print(f"** load_random_dns: {speed_dns}")
-        self.set_dns_uri()
+        print(f"** load_random_dns: {rand_dns_uri}")
+        self.set_dns_uri(rand_dns_uri)
 
     def set_dns_uri_sort_speed(self):
         dns_uri = self.conf.dns_uri()
@@ -105,7 +105,7 @@ class doh(object):
             'rr2---sn-vh5ouxa-hjuz.googlevideo.com': '134.0.218.205', 
             'rr4---sn-nv47zn7r.googlevideo.com': '173.194.15.41',
             'rr4---sn-hju7en7r.googlevideo.com': '74.125.167.90',
-            'www.instagram.com': '157.240.252.174',
+            'www.instagram.com': '157.240.252.7',
             'instagram.fevn4-1.fna.fbcdn.net': '185.57.71.161',
             'instagram.fevn4-2.fna.fbcdn.net': '185.150.166.97',
             'instagram.fevn4-3.fna.fbcdn.net': '178.219.57.34',
@@ -113,11 +113,11 @@ class doh(object):
             'instagram.fevn6-6.fna.fbcdn.net': '178.160.242.97',
             'instagram.fevn7-1.fna.fbcdn.net': '82.199.196.225',
             'instagram.fevn8-1.fna.fbcdn.net': '195.191.186.35',
-            'www.google.com': '142.250.186.36',
-            'youtube.com':'216.239.38.120',
-            'www.youtube.com':'216.239.38.120',
-            'i.ytimg.com':'216.239.38.120',
-            'yt3.ggpht.com': '142.250.186.36',
+            'www.google.com': '142.250.186.43',
+            'youtube.com':'216.239.38.55',
+            'www.youtube.com':'216.239.38.55',
+            'i.ytimg.com':'216.239.38.55',
+            'yt3.ggpht.com': '142.250.186.43',
         }
 
     def get_proxy_info(self):
@@ -161,13 +161,13 @@ class doh(object):
             return ping_time
         return False
 
-    def query(self, domain, conf):
+    def query(self, domain):
         ip_offline = self.get_offline(domain)
         ip_cache = self.get_cache(domain)
         if ip_cache != None:
             ip_cache =ip_cache.get("addr")
 
-        if conf.get_priority() == True:
+        if self.conf.get_priority() == True:
             if ip_offline:
                 self.add_cache(domain, ip_offline)
                 return ip_offline
